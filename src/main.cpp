@@ -8,7 +8,7 @@ int main() {
 
 
 
-    Simulator sim(1080, 720, "A Star Simulator", "./assets/fonts/mainFont.ttf");
+    Simulator sim(1920, 1080, "A Star Simulator", "./assets/fonts/mainFont.ttf");
     sim.run();
 
     return 0;

@@ -11,13 +11,21 @@
 
 typedef std::vector<std::vector<int>> Grid;
 
+enum CellType {
+    EMPTY, START, GOAL, OPEN, CLOSED, PATH
+};
+
 class Simulator {
 private:
 
     sf::View m_simView;
     sf::View m_menuView;
 
+    sf::Font m_font;
     sf::Text m_text;
+
+    sf::Vector2f m_startPos;
+    sf::Vector2f m_goalPos;
 
     sf::RenderWindow m_window;
 
@@ -35,6 +43,8 @@ private:
     void renderSim();
 
     void updateGrid();
+
+    sf::Vector2i getCellCoordsFromWorldPos(sf::Vector2f worldPos);
 public:
     Simulator(int width, int height, const std::string& title, const std::string& fontFile);
 
