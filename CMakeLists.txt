@@ -5,7 +5,11 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17")
 
 set(SOURCE_FILES src/main.cpp
         src/Simulator/Simulator.cpp
-        src/Simulator/Simulator.h)
+        src/Simulator/Simulator.h
+        src/Algorithm/Algorithm.h
+        src/Algorithm/AStar/AStar.cpp
+        src/Algorithm/AStar/AStar.h
+)
 add_executable(astar ${SOURCE_FILES})
 
 find_package(SFML 2.5 COMPONENTS system window graphics network audio REQUIRED)

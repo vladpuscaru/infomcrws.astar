@@ -8,6 +8,8 @@
 #include <SFML/Graphics.hpp>
 #include <iostream>
 #include <vector>
+#include "../Algorithm/Algorithm.h"
+#include "../Algorithm/AStar/AStar.h"
 
 typedef std::vector<std::vector<int>> Grid;
 
@@ -17,6 +19,7 @@ enum CellType {
 
 class Simulator {
 private:
+    std::shared_ptr<Algorithm> m_algorithm;
 
     sf::View m_simView;
     sf::View m_menuView;
@@ -43,6 +46,9 @@ private:
     void renderSim();
 
     void updateGrid();
+    void computePath();
+
+    void resetGrid();
 
     sf::Vector2i getCellCoordsFromWorldPos(sf::Vector2f worldPos);
 public:

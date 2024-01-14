@@ -33,13 +33,15 @@ void Simulator::init(const std::string &fontFile) {
 
     m_text.setFont(m_font);
 
-    m_startPos = { -1.f, -1.f };
-    m_goalPos = { -1.f, -1.f };
+    m_startPos = {-1.f, -1.f};
+    m_goalPos = {-1.f, -1.f};
 
 
     m_gridWidth = 5;
     m_gridHeight = 5;
     updateGrid();
+
+    m_algorithm = nullptr;
 }
 
 void Simulator::update() {
@@ -75,6 +77,9 @@ void Simulator::input() {
                     m_gridWidth -= 10;
                     m_gridHeight -= 10;
                     break;
+                case sf::Keyboard::C:
+                    computePath();
+                    break;
             }
         }
 
@@ -98,6 +103,8 @@ void Simulator::input() {
                 }
                 m_goalPos = worldPos;
             }
+
+            resetGrid();
         }
     }
 }
@@ -122,9 +129,22 @@ void Simulator::renderMenu() {
         m_text.setOutlineThickness(.5f);
         m_text.setOutlineColor(sf::Color::White);
         m_text.setFillColor(sf::Color::White);
-
         x = m_menuView.getCenter().x + m_menuView.getSize().x / 2 - m_text.getLocalBounds().width - paddingH;
         y = m_menuView.getCenter().y - m_menuView.getSize().y / 2 + paddingV;
+        m_text.setPosition(x, y);
+        m_window.draw(m_text);
+
+        long time = 0;
+        if (m_algorithm) {
+            time = m_algorithm->getLastExecutionTime();
+        }
+        m_text.setString("Last Execution Time: " + std::to_string(time) + "ms");
+        m_text.setCharacterSize(14);
+        m_text.setOutlineThickness(.5f);
+        m_text.setOutlineColor(sf::Color::White);
+        m_text.setFillColor(sf::Color::White);
+        x = m_menuView.getCenter().x + m_menuView.getSize().x / 2 - m_text.getLocalBounds().width - paddingH;
+        y = m_menuView.getCenter().y - m_menuView.getSize().y / 2 + 16 + paddingV;
         m_text.setPosition(x, y);
         m_window.draw(m_text);
 
@@ -133,9 +153,8 @@ void Simulator::renderMenu() {
         m_text.setOutlineThickness(.5f);
         m_text.setOutlineColor(sf::Color::White);
         m_text.setFillColor(sf::Color::White);
-
         x = m_menuView.getCenter().x + m_menuView.getSize().x / 2 - m_text.getLocalBounds().width - paddingH;
-        y = m_menuView.getCenter().y - m_menuView.getSize().y / 2 + 16 + paddingV;
+        y = m_menuView.getCenter().y - m_menuView.getSize().y / 2 + 32 + paddingV;
         m_text.setPosition(x, y);
         m_window.draw(m_text);
     }
@@ -227,6 +246,48 @@ sf::Vector2i Simulator::getCellCoordsFromWorldPos(sf::Vector2f worldPos) {
     if (row >= 0 && row <= m_gridWidth && col >= 0 && col <= m_gridHeight) {
         return {col, row};
     } else {
-        return { -1, -1 };
+        return {-1, -1};
+    }
+}
+
+void Simulator::computePath() {
+    sf::Vector2i start = getCellCoordsFromWorldPos(m_startPos);
+    sf::Vector2i goal = getCellCoordsFromWorldPos(m_goalPos);
+
+    if (m_startPos.x != -1 && m_startPos.y != -1 && m_goalPos.y != -1 && m_goalPos.y != -1) {
+        m_algorithm = std::make_shared<AStar>(
+                m_grid,
+                start,
+                goal
+        );
+
+        auto path = m_algorithm->computePath();
+        auto iterations = m_algorithm->getIterations();
+        auto& lastIteration = iterations[iterations.size() - 1];
+
+        for (const Node &n: path) {
+            m_grid[n.y][n.x] = CellType::PATH;
+        }
+
+        for (const Node &n : lastIteration.m_open) {
+            m_grid[n.y][n.x] = CellType::OPEN;
+        }
+
+        for (const Node &n : lastIteration.m_closed) {
+            m_grid[n.y][n.x] = CellType::CLOSED;
+        }
+    }
+}
+
+void Simulator::resetGrid() {
+    sf::Vector2i start = getCellCoordsFromWorldPos(m_startPos);
+    sf::Vector2i goal = getCellCoordsFromWorldPos(m_goalPos);
+    for (int i = 0; i < m_grid.size(); i++) {
+        for (int j = 0; j < m_grid.size(); j++) {
+            if ((i == start.y && j == start.x) || (i == goal.y && i == goal.x)) {
+                continue;
+            }
+            m_grid[i][j] = CellType::EMPTY;
+        }
     }
 }
