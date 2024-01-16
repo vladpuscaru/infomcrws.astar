@@ -7,6 +7,7 @@
 
 #include <SFML/Graphics.hpp>
 #include <iostream>
+#include <fstream>
 #include <vector>
 #include "../Algorithm/Algorithm.h"
 #include "../Algorithm/AStar/AStar.h"
@@ -32,6 +33,7 @@ private:
 
     sf::RenderWindow m_window;
 
+    std::vector<Grid> m_levelGrids;
     Grid m_grid;
     int m_gridWidth;
     int m_gridHeight;
@@ -50,9 +52,11 @@ private:
 
     void resetGrid();
 
+    void readLevelsFromFiles(const std::vector<std::string>& levelFiles);
+
     sf::Vector2i getCellCoordsFromWorldPos(sf::Vector2f worldPos);
 public:
-    Simulator(int width, int height, const std::string& title, const std::string& fontFile);
+    Simulator(int width, int height, const std::string& title, const std::string& fontFile, const std::vector<std::string>& levelFiles);
 
     void run();
 };

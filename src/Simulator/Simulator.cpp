@@ -4,8 +4,9 @@
 
 #include "Simulator.h"
 
-Simulator::Simulator(int width, int height, const std::string &title, const std::string &fontFile)
+Simulator::Simulator(int width, int height, const std::string &title, const std::string &fontFile, const std::vector<std::string>& levelFiles)
         : m_window(sf::VideoMode(width, height), title) {
+    readLevelsFromFiles(levelFiles);
     init(fontFile);
 }
 
@@ -74,8 +75,13 @@ void Simulator::input() {
                     m_gridHeight += 10;
                     break;
                 case sf::Keyboard::D:
-                    m_gridWidth -= 10;
-                    m_gridHeight -= 10;
+                    if (m_gridWidth > 10) {
+                        m_gridWidth -= 10;
+                    }
+
+                    if (m_gridHeight > 10) {
+                        m_gridHeight -= 10;
+                    }
                     break;
                 case sf::Keyboard::C:
                     computePath();
@@ -289,5 +295,29 @@ void Simulator::resetGrid() {
             }
             m_grid[i][j] = CellType::EMPTY;
         }
+    }
+}
+
+void Simulator::readLevelsFromFiles(const std::vector<std::string> &levelFiles) {
+    for (auto& fileName : levelFiles) {
+        std::ifstream file(fileName);
+        if (!file.is_open()) {
+            std::cerr << "Cannot open level file " + fileName << std::endl;
+            exit(-1);
+        }
+
+        std::string line;
+        while (std::getline(file, line)) {
+            Grid g;
+            std::vector<int> row;
+            for (int i = 0; i < line.length(); i++) {
+                std::string value = std::to_string(line[i]);
+                row.push_back(std::stoi(value));
+            }
+            g.push_back(row);
+            m_levelGrids.push_back(g);
+        }
+
+        file.close();
     }
 }
