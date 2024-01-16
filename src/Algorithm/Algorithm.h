@@ -64,6 +64,7 @@ public:
     }
 
     const std::vector<Iteration> &getIterations() const { return m_iterations; }
+    Iteration getLastIteration() const { return m_iterations.empty() ? Iteration() : m_iterations[m_iterations.size() - 1]; }
 
     double getLastExecutionTime() const {
         return (m_endTime.tv_usec - m_startTime.tv_usec) / 1000;
