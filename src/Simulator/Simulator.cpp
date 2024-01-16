@@ -104,6 +104,15 @@ void Simulator::input() {
                     m_goalPos = { -1, -1 };
                     resetGrid();
                     break;
+                case sf::Keyboard::Left:
+                    m_activeGrid--;
+                    if (m_activeGrid < 0) {
+                        m_activeGrid = m_levelGrids.size() - 1;
+                    }
+                    m_startPos = { -1, -1 };
+                    m_goalPos = { -1, -1 };
+                    resetGrid();
+                    break;
             }
         }
 
@@ -213,7 +222,7 @@ void Simulator::renderMenu() {
         m_window.draw(m_text);
     }
 
-    m_text.setString("Right Arrow - Change Grid");
+    m_text.setString("Left/Right Arrows - Change Grid");
     m_text.setCharacterSize(14);
     m_text.setOutlineThickness(.5f);
     m_text.setOutlineColor(sf::Color::White);
