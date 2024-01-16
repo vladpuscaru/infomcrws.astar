@@ -139,7 +139,9 @@ std::vector<Node*> AStar::getNeighbours(const Node &node) {
             }
 
             if (x >= 0 && x < m_grid[0].size() && y >= 0 && y < m_grid.size()) {
-                neighbours.push_back(&(m_grid[y][x]));
+                if (m_grid[y][x].value != CellType::OBSTACLE) {
+                    neighbours.push_back(&(m_grid[y][x]));
+                }
             }
         }
     }

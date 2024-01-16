@@ -11,12 +11,9 @@
 #include <vector>
 #include "../Algorithm/Algorithm.h"
 #include "../Algorithm/AStar/AStar.h"
+#include "./Constants.h"
 
 typedef std::vector<std::vector<int>> Grid;
-
-enum CellType {
-    EMPTY, START, GOAL, OPEN, CLOSED, PATH
-};
 
 class Simulator {
 private:
@@ -37,6 +34,9 @@ private:
     Grid m_grid;
     int m_gridWidth;
     int m_gridHeight;
+
+    int m_lastActiveGrid;
+    int m_activeGrid;
 
     void init(const std::string& fontFile);
 

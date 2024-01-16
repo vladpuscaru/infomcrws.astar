@@ -9,6 +9,7 @@ set(SOURCE_FILES src/main.cpp
         src/Algorithm/Algorithm.h
         src/Algorithm/AStar/AStar.cpp
         src/Algorithm/AStar/AStar.h
+        src/Simulator/Constants.h
 )
 add_executable(astar ${SOURCE_FILES})
 

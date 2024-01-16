@@ -4,7 +4,8 @@
 
 #include "Simulator.h"
 
-Simulator::Simulator(int width, int height, const std::string &title, const std::string &fontFile, const std::vector<std::string>& levelFiles)
+Simulator::Simulator(int width, int height, const std::string &title, const std::string &fontFile,
+                     const std::vector<std::string> &levelFiles)
         : m_window(sf::VideoMode(width, height), title) {
     readLevelsFromFiles(levelFiles);
     init(fontFile);
@@ -37,6 +38,8 @@ void Simulator::init(const std::string &fontFile) {
     m_startPos = {-1.f, -1.f};
     m_goalPos = {-1.f, -1.f};
 
+    m_activeGrid = -1;
+    m_lastActiveGrid = m_activeGrid - 1;
 
     m_gridWidth = 5;
     m_gridHeight = 5;
@@ -71,20 +74,35 @@ void Simulator::input() {
                     m_window.close();
                     break;
                 case sf::Keyboard::I:
-                    m_gridWidth += 10;
-                    m_gridHeight += 10;
+                    if (m_activeGrid == -1) {
+                        m_gridWidth += 10;
+                        m_gridHeight += 10;
+                    }
                     break;
                 case sf::Keyboard::D:
-                    if (m_gridWidth > 10) {
-                        m_gridWidth -= 10;
-                    }
+                    if (m_activeGrid == -1) {
+                        if (m_gridWidth > 10) {
+                            m_gridWidth -= 10;
+                        }
 
-                    if (m_gridHeight > 10) {
-                        m_gridHeight -= 10;
+                        if (m_gridHeight > 10) {
+                            m_gridHeight -= 10;
+                        }
                     }
                     break;
                 case sf::Keyboard::C:
                     computePath();
+                    break;
+                case sf::Keyboard::Right:
+                    m_activeGrid++;
+                    if (m_activeGrid >= m_levelGrids.size()) {
+                        m_activeGrid = -1;
+                        m_gridWidth = 5;
+                        m_gridHeight = 5;
+                    }
+                    m_startPos = { -1, -1 };
+                    m_goalPos = { -1, -1 };
+                    resetGrid();
                     break;
             }
         }
@@ -185,6 +203,9 @@ void Simulator::renderSim() {
                     case CellType::EMPTY:
                         rect.setFillColor(sf::Color::White);
                         break;
+                    case CellType::OBSTACLE:
+                        rect.setFillColor(sf::Color::Red);
+                        break;
                     case CellType::START:
                         rect.setFillColor(sf::Color::Green);
                         break;
@@ -215,17 +236,27 @@ void Simulator::renderSim() {
 }
 
 void Simulator::updateGrid() {
-    if (m_gridHeight != m_grid.size() || (!m_grid.empty() && m_gridWidth != m_grid[0].size())) {
-        m_grid.clear();
+    if (m_activeGrid == -1) {
+        if (m_activeGrid != m_lastActiveGrid || (m_gridHeight != m_grid.size() || (!m_grid.empty() && m_gridWidth != m_grid[0].size()))) {
+            // If grid has increased/decreased
+            m_grid.clear();
 
-        for (int i = 0; i < m_gridHeight; i++) {
-            std::vector<int> line;
-            for (int j = 0; j < m_gridWidth; j++) {
-                line.push_back(CellType::EMPTY);
+            for (int i = 0; i < m_gridHeight; i++) {
+                std::vector<int> line;
+                for (int j = 0; j < m_gridWidth; j++) {
+                    line.push_back(CellType::EMPTY);
+                }
+                m_grid.push_back(line);
             }
-            m_grid.push_back(line);
+        }
+    } else {
+        // If active grid has changed
+        if (m_activeGrid != m_lastActiveGrid) {
+            m_grid = m_levelGrids[m_activeGrid];
         }
     }
+
+    m_lastActiveGrid = m_activeGrid;
 
 
     if (m_startPos.x != -1 && m_startPos.y != -1) {
@@ -241,6 +272,12 @@ void Simulator::updateGrid() {
             m_grid[cellCoords.y][cellCoords.x] = CellType::GOAL;
         }
     }
+
+
+    if (!m_grid.empty()) {
+        m_gridWidth = m_grid[0].size();
+        m_gridHeight = m_grid.size();
+    }
 }
 
 sf::Vector2i Simulator::getCellCoordsFromWorldPos(sf::Vector2f worldPos) {
@@ -249,7 +286,7 @@ sf::Vector2i Simulator::getCellCoordsFromWorldPos(sf::Vector2f worldPos) {
     int row = worldPos.y / cellHeight;
     int col = worldPos.x / cellWidth;
 
-    if (row >= 0 && row <= m_gridWidth && col >= 0 && col <= m_gridHeight) {
+    if (row >= 0 && row < m_gridHeight && col >= 0 && col < m_gridWidth) {
         return {col, row};
     } else {
         return {-1, -1};
@@ -269,54 +306,59 @@ void Simulator::computePath() {
 
         auto path = m_algorithm->computePath();
         auto iterations = m_algorithm->getIterations();
-        auto& lastIteration = iterations[iterations.size() - 1];
+        auto &lastIteration = iterations[iterations.size() - 1];
 
-        for (const Node &n: path) {
-            m_grid[n.y][n.x] = CellType::PATH;
-        }
-
-        for (const Node &n : lastIteration.m_open) {
+        for (const Node &n: lastIteration.m_open) {
             m_grid[n.y][n.x] = CellType::OPEN;
         }
 
-        for (const Node &n : lastIteration.m_closed) {
+        for (const Node &n: lastIteration.m_closed) {
             m_grid[n.y][n.x] = CellType::CLOSED;
+        }
+
+        for (const Node &n: path) {
+            m_grid[n.y][n.x] = CellType::PATH;
         }
     }
 }
 
 void Simulator::resetGrid() {
-    sf::Vector2i start = getCellCoordsFromWorldPos(m_startPos);
-    sf::Vector2i goal = getCellCoordsFromWorldPos(m_goalPos);
-    for (int i = 0; i < m_grid.size(); i++) {
-        for (int j = 0; j < m_grid.size(); j++) {
-            if ((i == start.y && j == start.x) || (i == goal.y && i == goal.x)) {
-                continue;
+    if (m_activeGrid == -1) {
+        for (int i = 0; i < m_grid.size(); i++) {
+            for (int j = 0; j < m_grid[i].size(); j++) {
+                m_grid[i][j] = CellType::EMPTY;
             }
-            m_grid[i][j] = CellType::EMPTY;
+        }
+    } else {
+
+        for (int i = 0; i < m_grid.size(); i++) {
+            for (int j = 0; j < m_grid[i].size(); j++) {
+                m_grid[i][j] = m_levelGrids[m_activeGrid][i][j];
+            }
         }
     }
 }
 
 void Simulator::readLevelsFromFiles(const std::vector<std::string> &levelFiles) {
-    for (auto& fileName : levelFiles) {
+    for (auto &fileName: levelFiles) {
         std::ifstream file(fileName);
         if (!file.is_open()) {
             std::cerr << "Cannot open level file " + fileName << std::endl;
             exit(-1);
         }
 
+        Grid g;
         std::string line;
         while (std::getline(file, line)) {
-            Grid g;
             std::vector<int> row;
             for (int i = 0; i < line.length(); i++) {
-                std::string value = std::to_string(line[i]);
+                std::string value;
+                value.push_back(line[i]);
                 row.push_back(std::stoi(value));
             }
             g.push_back(row);
-            m_levelGrids.push_back(g);
         }
+        m_levelGrids.push_back(g);
 
         file.close();
     }

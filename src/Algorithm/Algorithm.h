@@ -8,6 +8,7 @@
 #include <vector>
 #include <SFML/Graphics.hpp>
 #include <sys/time.h>
+#include "../Simulator/Constants.h"
 
 struct Node {
 public:
@@ -15,17 +16,19 @@ public:
     int y;
     const Node *parent = nullptr;
 
+    int value;
+
     int gCost = 0.0f;
     int hCost = 0.0f;
     int fCost = 0.0f;
 
-    Node(int x, int y, const Node *parent = nullptr)
-            : x(x), y(y), parent(parent) {
+    Node(int x, int y, int value, const Node *parent = nullptr)
+            : x(x), y(y), value(value), parent(parent) {
 
     }
 
     Node(const Node &that)
-            : x(that.x), y(that.y), parent(that.parent) {
+            : x(that.x), y(that.y), value(that.value), parent(that.parent) {
 
     }
 };
@@ -54,7 +57,7 @@ public:
             std::vector<Node> line;
             line.reserve(grid[i].size());
             for (int j = 0; j < grid[i].size(); j++) {
-                line.push_back(Node(j, i));
+                line.push_back(Node(j, i, grid[i][j]));
             }
             m_grid.push_back(line);
         }
