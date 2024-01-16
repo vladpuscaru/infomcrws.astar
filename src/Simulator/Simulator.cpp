@@ -172,15 +172,17 @@ void Simulator::renderMenu() {
         m_text.setPosition(x, y);
         m_window.draw(m_text);
 
-        m_text.setString("I - [I]ncrease | D - [D]ecrease");
-        m_text.setCharacterSize(14);
-        m_text.setOutlineThickness(.5f);
-        m_text.setOutlineColor(sf::Color::White);
-        m_text.setFillColor(sf::Color::White);
-        x = m_menuView.getCenter().x + m_menuView.getSize().x / 2 - m_text.getLocalBounds().width - paddingH;
-        y = m_menuView.getCenter().y - m_menuView.getSize().y / 2 + 32 + paddingV;
-        m_text.setPosition(x, y);
-        m_window.draw(m_text);
+        if (m_activeGrid == -1) {
+            m_text.setString("I - [I]ncrease | D - [D]ecrease");
+            m_text.setCharacterSize(14);
+            m_text.setOutlineThickness(.5f);
+            m_text.setOutlineColor(sf::Color::White);
+            m_text.setFillColor(sf::Color::White);
+            x = m_menuView.getCenter().x + m_menuView.getSize().x / 2 - m_text.getLocalBounds().width - paddingH;
+            y = m_menuView.getCenter().y - m_menuView.getSize().y / 2 + 32 + paddingV;
+            m_text.setPosition(x, y);
+            m_window.draw(m_text);
+        }
     }
 
     m_window.setView(m_window.getDefaultView());
