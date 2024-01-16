@@ -370,12 +370,7 @@ void Simulator::resetGrid() {
             }
         }
     } else {
-
-        for (int i = 0; i < m_grid.size(); i++) {
-            for (int j = 0; j < m_grid[i].size(); j++) {
-                m_grid[i][j] = m_levelGrids[m_activeGrid][i][j];
-            }
-        }
+        m_grid = m_levelGrids[m_activeGrid];
     }
 }
 
