@@ -11,6 +11,7 @@
 #include <vector>
 #include "../Algorithm/Algorithm.h"
 #include "../Algorithm/AStar/AStar.h"
+#include "../Algorithm/DFS/DFS.h"
 #include "./Constants.h"
 
 typedef std::vector<std::vector<int>> Grid;
