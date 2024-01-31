@@ -22,7 +22,8 @@ int main() {
       "./assets/levels/level2.txt",
       "./assets/levels/level3.txt",
       "./assets/levels/level4.txt",
-      "./assets/levels/level5.txt"
+      "./assets/levels/level5.txt",
+      "./assets/levels/level6.txt"
     };
 
     Simulator sim(1920, 1080, "A Star Simulator", "./assets/fonts/mainFont.ttf", levels);
